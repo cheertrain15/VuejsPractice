@@ -1,3 +1,12 @@
+/*
+*  I. Introduction
+*  II. The Vue Instance
+*  III. Template Syntax
+*/
+//====================
+/*
+*  I. Introduction
+*/
 var example1 = new Vue({
    el: '#app',
    data: {
@@ -67,3 +76,110 @@ var app7 = new Vue({
       ]
    }
 })
+
+
+/*
+*  II. The Vue Instance
+*/
+
+
+var data = {a : 1}
+
+var vm = new Vue({
+   data : data
+})
+
+// console.log(vm.a === data.a);
+
+// vm.a = 2
+// console.log(data.a);
+
+// data.a =3
+// console.log(vm.a);
+
+var obj = {
+   foo : 'bar'
+}
+
+Object.freeze(obj)
+
+var vm2 = new Vue({
+   el : '#app8',
+   data : obj
+})
+
+
+var dataDollor = {a : 1}
+var vmDollor = new Vue({
+   el : '#app8',
+   data: dataDollor
+})
+
+// console.log(vmDollor.$data === dataDollor);
+// console.log(vmDollor.$el === document.getElementById('app8'));
+vmDollor.$watch('a', function(newValue, oldValue){
+     // This callback will be called when `vm.a` changes
+})
+
+
+var createdHook = new Vue({
+   data : {
+      a : 6
+   },
+   created : function(){
+       // `this` points to the vm instance
+       console.log('a is: ' + this.a)
+   }
+})
+
+
+/*
+* III.Template Syntax
+*/
+var example9 = new Vue({
+   el: '#app9',
+   data: {
+      msg: 'v-once Test'
+   }
+})
+
+var example10 = new Vue({
+   el : '#app10',
+   data : {
+      rawHTML: '<span style="color:red">This Is Red</span>'
+   }
+})
+
+var example11 = new Vue({
+   el : '#app11',
+   data : {
+      hiddenMsg : 'ihihhihihihihihihi',
+      onProhibit : function(){
+         console.log('this is onProhibit')
+      }
+   }
+})
+
+var example12 = new Vue({
+   el : '#app12',
+   data : {
+      message : 'lanif ysatnaf'
+   },
+   methods : {
+      changedMessage : function(){
+         return this.message.split('').reverse().join('')
+      }
+   },
+   computed: {
+      //a computed getter
+      reversedMessage : function(){
+         //'this' points to the example12 instance
+         return this.message.split('').reverse().join('')
+      }
+   }
+})
+
+console.log(example12.reversedMessage);
+example12.message = "Kaeritai"
+console.log(example12.reversedMessage);
+

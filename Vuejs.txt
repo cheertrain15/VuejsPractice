@@ -1,4 +1,9 @@
-I . Vue.js Introduction 
+I. Vue.js Introduction 
+II. The Vue Instance 
+III. Template Syntax
+IV. Computed Properties and Watchers
+
+============================
 
 src="https://cdn.jsdelivr.net/npm/vue" - production version, optimized for size and speed
 src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js" - development version, includes helpful console warnings
@@ -230,5 +235,221 @@ vm.$watch('a', function (newValue, oldValue) {
   // This callback will be called when `vm.a` changes
 })
 ===
+
+Instance Lifecycle Hooks
+*Each Vue instance goes through a series of initialization steps when it’s created 
+*1. Set up data observation
+*2. Compile the template
+*3. Mount the instance to the DOM.
+*4. Update the DOM when data changes.
+*5. Runs lifecycle hooks
+*lifecycle hooks : a function that enables to add your own code at specific stages.
+
+
+created hook 
+*Runs code after an instance is created.
+*eg. onLoad()
+====
+new Vue({
+  data: {
+    a: 1
+  },
+  created: function () {
+    // `this` points to the vm instance
+    console.log('a is: ' + this.a)
+  }
+})
+*other hooks on instance's other stage of its lifecycle.
+*mounted, updated, destroyed
+*All lifecycle hooks are called with their this context pointing to the Vue instance invoking it.
+====
+
+
+Don’t use arrow functions on an options property or callback.
+*eg. created: () => console.log(this.a)
+*eg. vm.$watch('a', newValue => this.myMethod())
+*Since an arrow function doesn’t have a this, this will be treated as any other variable and lexically looked up through parent scopes until found
+*Resulting in errors such as 'Uncaught TypeError: Cannot read property of undefined'
+*'Uncaught TypeError: this.myMethod is not a function'
+
+
+
+III. Template Syntax
+
+Interpolations
+
+1.Text
+*“Mustache” syntax 
+*{{}} interprets the data as plain text, not HTML.
+*<span>Message : {{msg}}</span>
+*{{msg}} will be replaced with corresponding data object.
+
+v-once
+*one-time interpolation
+*do not update on data change.
+*This will affect anything that is inside the node. (eg.childNodes)
+*<span v-once>This will never change: {{msg}}</span>
+
+
+2.Raw HTML
+
+v-html
+*directive to output real HTML
+
+*Dynamically rendering arbitrary HTML on your website can be very dangerous because it can easily lead to XSS vulnerabilities. 
+*Only use HTML interpolation on trusted content and never on user-provided content.
+
+
+3.attributes
+
+v-bind
+*Solution for using {{}} inside HTML attributes.
+*<div v-bind:id="dynamicId"></div>
+*<button v-bind:disabled="isButtonDisabled">Button</button>
+*'isButtonDisabled' has either null, undeined, or false.
+*'disabled' attribute is not included in rendered <button> element.
+
+
+4. Using JS expressions
+*Each binding can only contain one single expression.
+===
+{{ number + 1 }}
+
+{{ ok ? 'YES' : 'NO' }}
+
+{{ message.split('').reverse().join('') }}
+
+<div v-bind:id="'list-' + id"></div>
+===
+
+*The following example won't work.
+===
+<!-- this is a statement, not an expression: -->
+{{ var a = 1 }}
+
+<!-- flow control won't work either, use ternary expressions -->
+{{ if (ok) { return message } }}
+*Do not attempt to access to user defined globals in template expressions.
+===
+
+
+Directives
+
+v-
+* 'v-' attribute values are exprected to be a single Javascript expression.
+*Except v-for
+*Directives' job is to react to the DOM when the value of its expression changes. 
+
+
+1. Arguments
+
+Denoted by a colon after the directive name. 
+*<a v-bind:href="url">...</a>
+*<button v-on:click="doEventHandler"></button>
+
+
+2. Dynamic Arguments 
+
+===
+<a v-bind:[attributeName]="url">...</a>
+*If Vue instance has a data property of 'attributeName',
+*whose value is 'href',
+*then this binding will be equivalent to 'v-bind:href'
+
+<a v-on:[eventName]="doSomething">...</a>
+*When 'eventName's value is 'focus'
+*v-on:[eventName] will be equivalent to 'v-on:focus'.
+===
+
+'in-DOM templates ' = templates directly written in an HTML file.
+
+===
+<!-- This will trigger a compiler warning. -->
+<a v-bind:['foo' + bar]="value"> ... </a>
+
+<!-- This will be converted to v-bind:[someattr] in in-DOM templates. -->
+<a v-bind:[someAttr]="value"> ... </a>
+*Use expressions without spaces, quotes, uppercases
+===
+
+
+3. Modifiers
+Special postfixes denoted by a dot.
+*This indicates that a directive should be bound in some special way.
+===
+<form v-on:submit.prevent="onSubmit"> ... </form>
+*'.prevent' tells 'v-on' directive to call 'event.preventDefault()' on the triggered event.
+===
+
+
+Shorthands
+v-
+*Serves as a visual cue for identifying Vue-specific attributes in your templates.
+*'v-' prefix becomes less important when you are building a SPA.
+*Vue provides special shorthands for two of the most often used directives.
+*'v-bind' and 'v-on'
+
+
+1.v-bind Shorthand
+===
+<!-- full syntax -->
+<a v-bind:href="url"> ... </a>
+
+<!-- shorthand -->
+<a :href="url"> ... </a>
+
+<!-- shorthand with dynamic argument (2.6.0+) -->
+<a :[key]="url"> ... </a>
+===
+
+
+2.v-on Shorthand
+===
+<!-- full syntax -->
+<a v-on:click="doSomething"> ... </a>
+
+<!-- shorthand -->
+<a @click="doSomething"> ... </a>
+
+<!-- shorthand with dynamic argument (2.6.0+) -->
+<a @[event]="doSomething"> ... </a>
+*v-bind => (blank)
+*v-on: => @
+*These do not appear in the final rendered markup.
+===
+
+
+IV. Computed Properties and Watchers
+
+Computed Properties
+*Complex logixs are done at Vue instance, not on in-template.
+*In-template expressions are only for very simple operations.
+*Anything that needs computation must be expressed(function())) in 'computed' object.
+
+
+1. Computed Caching vs methods
+*Computed properties are cached based on their reactive dependencies.
+*If data is not changed, no matter how many times you access to reversedMessage,
+*reversedMessage will return previously computed result, 
+*without having to run the function again.
+*eg.
+===
+computed: {
+  now: function () {
+    return Date.now()
+  }
+}
+*This will never update, because Date.now() is not a reactive dependency.
+*However, method invocation will always run the function whenever a re-render happens.
+===
+
+Why do need caching?
+*To make function or program less heavy.
+*To prevent from repeating complex logic again.
+
+
+2. Computed vs Watched property
+
+
 
 

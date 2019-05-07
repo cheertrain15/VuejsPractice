@@ -54,7 +54,6 @@
          </todo-item>
       </ol>
    </div>
-   <script src="./essential.js"></script>
    <!-- Introduction Ends Here-->
 
    <!-- The Vue Instance-->
@@ -63,8 +62,36 @@
       <!-- Object.freeze(object)-->
       <button v-on:click="foo = 'baz'">Change this</button>
    </div>
-   <script src="./theVueInstance.js"></script>
    <!-- The Vue Instance Ends Here-->
+
+   <!-- Template Syntax-->
+   <div id="app9">
+      <p v-once>{{msg}}</p>
+      <input v-model="msg">
+   </div>
+
+   <div id="app10">
+      <p>Using mustaches : {{rawHTML}}</p>
+      <p>Using v-html directive : <span v-html="rawHTML"></span></p>
+   </div>
+
+   <div id="app11">
+      <p>{{hiddenMsg}}</p>  
+      <a v-bind:href.prevent='hiddenMsg'>Do Not Enter</a>
+      <form @click.prevent='onProhibit'>Warning Form</form>
+   </div>
+   <!-- Template Syntax Ends Here-->
+
+   <!-- Computed Properties & Watchers-->
+   <div id="app12">
+      <p>Original Message : "{{message}}"</p>
+      <p>Changed Message : "{{reversedMessage}}"</p>
+      <p>Computed Message2 : "{{changedMessage()}}"</p>
+   </div>
+   <!-- Computed Properties & Watchers Ends Here-->
+
+   
+   <script src="./essential.js"></script>
 </body>
 
 </html>
