@@ -183,3 +183,71 @@ console.log(example12.reversedMessage);
 example12.message = "Kaeritai"
 console.log(example12.reversedMessage);
 
+var example13 = new Vue({
+   el : '#app13',
+   data : {
+      classObject : {
+         active : true,
+         'text-danger' : true
+      }
+   }
+})
+
+var example14 = new Vue({
+   el : '#app14',
+   data : {
+      isActive : true,
+      error : null
+   },
+   computed : {
+      classObject : function(){
+         return{
+            active: this.isActive && !this.error,
+            'text-danger': this.error && this.error.type === 'fatal'
+         }
+      }
+   }
+})
+
+var example15 = new Vue({
+   el : '#app15',
+   data : {
+      // awesome : false
+      awesome : true
+   }
+})
+
+var example16 = new Vue({
+   el : '#app16',
+   data : {
+      ok : false
+      // ok : true
+   }
+})
+
+var example17 = new  Vue({
+   el : '#app17',
+   data : {
+      // type : 'A'
+      // type : 'B'
+      // type : 'C'
+      type : 'X'
+   }
+})
+
+var example18 = new Vue({
+   el : '#app18',
+   data : {
+      loginType : 'username'
+      
+   },
+   methods : {
+      change : function(){
+         if(this.loginType === 'username'){
+            this.loginType = 'useremail'
+         } else {
+            this.loginType = 'username'
+         }
+      }
+   }
+})

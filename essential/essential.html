@@ -90,7 +90,62 @@
    </div>
    <!-- Computed Properties & Watchers Ends Here-->
 
+   <!-- Class and Stlye Bindings-->
+   <div id="app13">
+      <div v-bind:class="classObject">APP13</div>
+   </div> 
    
+   <div id="app14">
+      <div v-bind:class="classObject">APP14</div>
+   </div>  
+   <!--  Class and Stlye Bindings Ends Here-->
+
+   <!-- Conditional Rendering-->
+   <div id="app15">
+      <h1 v-if="awesome">Vue is awesome!</h1>
+      <h1 v-else>Oh no</h1>
+   </div>
+
+   <div id="app16">
+      <template v-if="ok">
+         <h1>Template Tag Testing</h1>
+         <p>Inside the Template Tage True</p>
+      </template>
+      <template v-else>
+         <h1>Template Tag Testing</h1>
+         <p>Inside the Template Tage False</p>
+      </template>
+   </div>
+
+   <div id="app17">
+      <div v-if="type === 'A'">
+      A
+      </div>
+      <div v-else-if="type === 'B'">
+      B
+      </div>
+      <div v-else-if="type === 'C'">
+      C
+      </div>
+      <div v-else>
+      Not A/B/C
+      </div>
+   </div>
+
+   <div id="app18">
+      <template v-if="loginType === 'username'">
+         <label>Username</label>
+         <input placeholder="Enter your username" key="username-input">
+      </template>
+      <template v-else>
+         <label>Email</label>
+         <input placeholder="Enter your email address" key="useremail-input">
+      </template>
+      <button v-on:click="change">Toggle</button>
+   </div>
+   <!--  Conditional Rendering Ends Here-->
+
+
    <script src="./essential.js"></script>
 </body>
 
