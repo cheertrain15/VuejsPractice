@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+   <meta charset="UTF-8">
+   <title>Vue.js Sample One</title>
+   <!-- <script src="https://cdn.jsdelivr.net/npm/vue"></script> -->
+   <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+
+<body>
+   <!-- Introduction -->
+   <div id="app">
+      {{mog}}
+   </div>
+
+   <div id="app2">
+      <span v-bind:title="message">
+         Hover me to see the hidden message.
+      </span>
+   </div>
+
+   <div id="app3">
+      <span v-if="seen">
+         Now u c me.
+      </span>
+   </div>
+
+   <div id="app4">
+      <ol>
+         <li v-for="todo in todos">
+            {{ todo.text }}
+         </li>
+      </ol>
+   </div>
+
+   <div id="app5">
+      <p>{{message}}</p>
+      <button v-on:click="reverseMessage">Reverse Message</button>
+   </div>
+
+   <div id="app6">
+      <p>{{message}}</p>
+      <input v-model="message">
+   </div>
+
+   <div id="app7">
+      <ol>
+         <todo-item
+            v-bind:todo="item"
+            v-for="item in groceryList"
+            v-bind:key="item.id"
+         >
+         </todo-item>
+      </ol>
+   </div>
+   <script src="./essential.js"></script>
+   <!-- Introduction Ends Here-->
+
+   <!-- The Vue Instance-->
+   <div id='app8'>
+      <p>{{foo}}</p>
+      <!-- Object.freeze(object)-->
+      <button v-on:click="foo = 'baz'">Change this</button>
+   </div>
+   <script src="./theVueInstance.js"></script>
+   <!-- The Vue Instance Ends Here-->
+</body>
+
+</html>

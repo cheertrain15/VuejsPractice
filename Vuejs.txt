@@ -1,0 +1,234 @@
+I . Vue.js Introduction 
+
+src="https://cdn.jsdelivr.net/npm/vue" - production version, optimized for size and speed
+src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js" - development version, includes helpful console warnings
+
+*1. There are some features of production version do not have, but development version has.
+*2. For exmaple, 'v-bind:title'
+
+====
+
+<div id="app-2">
+  <span v-bind:title="message">
+    Hover your mouse over me for a few seconds
+    to see my dynamically bound title!
+  </span>
+</div>
+
+var example2 = new Vue({
+   el: '#app2',
+   data: {
+      message: 'This is hidden message!'
+   }
+})
+
+*1. 'el' has to be same as the DOM's id or class(name).
+*2. 'data' is the source that will be reflected in DOMs.
+*3. To manipulate the data shwon on the DOM, use name of the variable(or instance). 
+For exmaple, 'example.message = 'This is not Hidden Message Ha ha'.
+====
+
+
+'v-' is called a 'directive'.
+'v-'s are reactive attributes provided by Vue.js
+
+'v-bind' means “keep this element’s title attribute up-to-date with the message property on the Vue instance.”
+*1. This can bind data to the structure of the DOM.
+*2. Transition effects can be automatically applied to the DOM when inserted/updated/removed by Vue.
+
+'v-if' is a conditional.
+
+'v-for' is a loop.
+*Usually for displaying a list of items.
+
+'v-on' is for handling user input.
+*eg : v-on:click="reverseMessage"
+*Event Handlers must be defined in 'methods' variable.
+
+'v-model' is two-way binding directive.
+*As you change the state, the Vue automatically updates the DOM.
+
+
+Defining a new component called todo-item
+===
+Vue.component('todo-item', {
+  template: '<li>This is a todo</li>'
+})
+
+<ol>
+  <!-- Create an instance of the todo-item component -->
+  <todo-item></todo-item>
+</ol>
+
+*More dynamically
+Vue.component('todo-item', {
+   //name of the prop is 'todo'.
+   //'props' is like a custom attribute.
+   //'template' is like a format of how the data should be shown.
+   props: ['todo'],
+   template: '<li>{{todo.text}}/li>'
+})
+
+var app7 = new Vue({
+   el : '#app7',
+   data : {
+      groceryList : [
+         {id : 0 , text : Vegies},
+         {id : 1 , text : cheese},
+         {id : 2 , text : Milk}
+      ]
+   }
+})
+
+<div id="app7">
+   <ol>
+      <todo-item
+         v-bind:todo="item"
+         v-for="item in groceryList"
+         v-bind:key="item.id"
+      >
+      </todo-item>
+   </ol>
+</div>
+
+
+*Format
+//creating new Component
+Vue.component('Vue component Name', {
+   props: ['custom name to be used after v-bind:'],
+   template: '<li>{{custom name.specific data of the custom name}</li>'
+})
+
+var Vue instance name = new Vue({
+   el : 'selector&name of desired DOM',
+   data : {
+      desired variable name : [
+         {id : 0 , text : Vegies},
+         {id : 1 , text : cheese},
+         {id : 2 , text : Milk}
+      ]
+   }
+})
+
+<div id="Vue instance name">
+   <ol>
+      <Vue component Name
+         v-bind:props' custom name="item"
+         v-for="item in desired variable name"
+         v-bind:key="desired variable name.id"
+      >
+      </Vue component Name>
+   </ol>
+</div>
+
+===
+
+
+If there are more than one Vue components in a DOM,
+it will look like 
+===
+<div id="app">
+  <app-nav></app-nav>
+  <app-view>
+    <app-sidebar></app-sidebar>
+    <app-content></app-content>
+  </app-view>
+</div>
+===
+
+
+
+II . The Vue Instance 
+
+Creating new Vue instance 
+====
+var vm = new vueInstance({
+   // options 
+})
+*'vm' stands for View Model.
+*A Vue application consists of a root Vue instance created with new Vue
+*eg.
+Root Instance
+└─ TodoList
+   ├─ TodoItem
+   │  ├─ DeleteTodoButton
+   │  └─ EditTodoButton
+   └─ TodoListFooter
+      ├─ ClearTodosButton
+      └─ TodoListStatistics
+
+*All Vue components are also Vue instances.
+====
+
+Vue API reference : https://vuejs.org/v2/api/#Options-Data
+
+When a Vue instance is created, it adds all the properties found in its data object to Vue’s reactivity system. 
+*react = update
+====
+// Our data object
+var data = { a: 1 }
+
+// The object is added to a Vue instance
+var vm = new Vue({
+  data: data
+})
+
+// Getting the property on the instance
+// returns the one from the original data
+vm.a == data.a // => true
+
+// Setting the property on the instance
+// also affects the original data
+vm.a = 2
+data.a // => 2
+
+// ... and vice-versa
+data.a = 3
+vm.a // => 3
+=====
+
+
+*When this data changes, the view will re-render.
+*Properties in data are only reactive if they existed when the instance was created.
+
+vm.b = 'hi'
+*This will not  trigger any view updates.
+*To trigger view updates, set some initial value.
+*eg.
+====
+data: {
+  newTodoText: '',
+  visitCount: 0,
+  hideCompletedTodos: false,
+  todos: [],
+  error: null
+}
+====
+
+Object.freeze()
+*Prevents existing properties from being changed
+*Reactivity system can’t track changes.
+*When freeze is set and attemps to change state, 'read only' error will occur.
+
+$
+*useful instance properties and methods's prefix.
+*It is for differentiate Vue instances from user-defined properties.
+*$watch is an instance method.
+*eg.
+===
+var data = { a: 1 }
+var vm = new Vue({
+  el: '#example',
+  data: data
+})
+
+vm.$data === data // => true
+vm.$el === document.getElementById('example') // => true
+
+// $watch is an instance method
+vm.$watch('a', function (newValue, oldValue) {
+  // This callback will be called when `vm.a` changes
+})
+===
+
+
