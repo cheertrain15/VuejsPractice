@@ -1388,3 +1388,93 @@ new Vue({
 
 
 4. A Single Root Element.
+
+*Error : every component must have a single root element.
+*Solution : Wrap the component in a parent element. (eg. <div>)
+===
+<blog-post
+  v-for="post in posts"
+  v-bind:key="post.id"
+  v-bind:post="post"
+></blog-post>
+
+Vue.component('blog-post', {
+  props: ['post'],
+  template: `
+    <div class="blog-post">
+      <h3>{{ post.title }}</h3>
+      <div v-html="post.content"></div>
+    </div>
+  `
+})
+*henever a new property is added to post objects, 
+*it will automatically be available inside <blog-post>.
+===
+
+
+5. Listening to Child Components Events
+
+*Sending data from child to parent.
+===
+<blog-post
+  ...
+  v-on:enlarge-text="postFontSize += 0.1"
+></blog-post>
+
+<button v-on:click="$emit('enlarge-text')">
+  Enlarge text
+</button>
+
+*enlarge-text = custom event name
+*$emit() = the child component can emit an event on itself.
+===
+
+
+*Emitting a Value with an Event
+===
+<button v-on:click="$emit('enlarge-text', 0.1)">
+  Enlarge text
+</button>
+
+//event's value
+//$event = $emit()'s 2nd parameter.
+<blog-post
+  ...
+  v-on:enlarge-text="postFontSize += $event"
+></blog-post>
+
+or 
+//event handler is method
+<blog-post
+  ...
+  v-on:enlarge-text="onEnlargeText"
+></blog-post>
+
+methods: {
+  onEnlargeText: function (enlargeAmount) {
+    this.postFontSize += enlargeAmount
+  }
+}
+===
+
+*Using v-model on Components 
+===
+<custom-input v-model="searchText"></custom-input>
+
+Vue.component('custom-input', {
+  props: ['value'],
+  template: `
+    <input
+      v-bind:value="value"
+      v-on:input="$emit('input', $event.target.value)"
+    >
+  `
+})
+*The <input> inside the component must
+*Bind the 'value' attribute to a 'value' prop.
+*On 'input', emit its own custom 'input' event with the new value.
+===
+
+
+6. Content Distribution with Slots
+
