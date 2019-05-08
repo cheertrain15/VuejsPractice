@@ -141,10 +141,75 @@
          <label>Email</label>
          <input placeholder="Enter your email address" key="useremail-input">
       </template>
+      <h2 v-show="ok">Hello!</h2>
       <button v-on:click="change">Toggle</button>
    </div>
    <!--  Conditional Rendering Ends Here-->
 
+   <!--  List Rendering -->
+   <ul id="app19">
+      <li v-for="item in example">
+         {{item.message}}
+      </li>
+   </ul>
+   <div id="app20">
+      <p>{{sample}}</p>
+   </div>
+   <div id="app21">
+      <li v-for="n in evenNumbers">{{n}}</li>
+   </div>
+   <div id="app22">
+      <li v-for="n in even(numbers)">{{n}}</li>
+   </div>
+   <div id="vForRange">
+      <span v-for="n in 7">
+         {{n}}
+         {{greetings}}
+      </span>
+   </div>
+   <!--  List Rendering Ends Here-->
+
+   <!--  Event Handling  -->
+   <div id="inlineMethods">
+      <button v-on:click="say('secret')">Say</button>
+      <button v-on:click="yell('banzai')">Yell</button>
+   </div>
+   <div id="eventModifiersMethod">
+      <form v-on:submit.prevent="onSubmit">
+         <input type="submit">SEND</form>
+      </form>
+   </div>
+   <div id="eventModifiers">
+      <form v-on:submit.prevent>
+         <input type="submit">SEND</form>
+      </form>
+   </div>
+   <div id="scroll" v-on:scroll.passive="onScroll">
+      Scrolling
+   </div>
+   <div id="keyModifier">
+      <input v-on:keyup.enter="pop">
+      <input v-on:keyup.1="one">
+      <input v-on:keyup.end="end">
+      <input v-on:keyup.up="up">
+      <button @click.alt="clicked">OO</button>
+   </div>
+   <!--  Event Handling Ends Here-->
+
+   <!--  Form Input Bindings-->
+   <div id='example-3'>
+      <input type="checkbox" id="jack" value="Jack" v-model="ASD">
+      <label for="jack">Jack</label>
+      <input type="checkbox" id="john" value="John" v-model="ASD">
+      <label for="john">John</label>
+      <input type="checkbox" id="mike" value="Mike" v-model="ASD">
+      <label for="mike">Mike</label>
+      <br>
+      <span>Checked names: {{ ASD }}</span>
+   </div>
+   <!--  Form Input Bindings Ends Here-->
+
+   
 
    <script src="./essential.js"></script>
 </body>

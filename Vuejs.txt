@@ -4,8 +4,13 @@ III. Template Syntax
 IV. Computed Properties and Watchers
 V. Class and Style Bindings
 VI. Conditional Rendering
-
+VII. List Rendering
+VIII. Event Handling 
+IX. Form Input Bindings 
+X. Component Basics
 ============================
+----------------------------
+I. Vue.js Introduction 
 
 src="https://cdn.jsdelivr.net/npm/vue" - production version, optimized for size and speed
 src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js" - development version, includes helpful console warnings
@@ -143,9 +148,9 @@ it will look like
 </div>
 ===
 
+----------------------------
 
-
-II . The Vue Instance 
+II. The Vue Instance 
 
 Creating new Vue instance 
 ====
@@ -263,7 +268,7 @@ new Vue({
 })
 *other hooks on instance's other stage of its lifecycle.
 *mounted, updated, destroyed
-*All lifecycle hooks are called with their this context pointing to the Vue instance invoking it.
+*All lifecycle hooks are called with their 'this'context pointing to the Vue instance invoking it.
 ====
 
 
@@ -275,6 +280,7 @@ Don’t use arrow functions on an options property or callback.
 *'Uncaught TypeError: this.myMethod is not a function'
 
 
+----------------------------
 
 III. Template Syntax
 
@@ -421,6 +427,8 @@ v-
 ===
 
 
+----------------------------
+
 IV. Computed Properties and Watchers
 
 Computed Properties
@@ -517,6 +525,7 @@ Watchers
 *Useful for performing asynchronous or expensive operations in response to changing data.
 
 
+----------------------------
 
 V. Class and Style Bindings
 
@@ -623,6 +632,8 @@ Multiple Values
 ===
 
 
+----------------------------
+
 VI. Conditional Rendering
 
 v-if
@@ -653,3 +664,727 @@ v-else-if
 </div>
 ===
 
+
+Controlling Reusable Elements with 'key'
+===
+<template v-if="loginType === 'username'">
+  <label>Username</label>
+  <input placeholder="Enter your username" key="username-input">
+</template>
+<template v-else>
+  <label>Email</label>
+  <input placeholder="Enter your email address" key="email-input">
+</template>
+*Keys with unique values.
+*The value for username and email won't be shared anymore.
+===
+
+v-show
+*Will always be rendered and remain in the DOM.
+*Only toggles the 'display' CSS property.
+*Always rendered regardless of initial condition.
+*Does not support <template> nor 'v-else'.
+*If something need to be toggled very often : v-show
+*If the condition is unlikely to change at runtime : v-if
+
+
+v-if w/ v-for
+*Using v-if & v-for together is not recommended.
+*'v-for' has higher priority than 'v-if'
+
+
+----------------------------
+
+VII. List Rendering
+
+v-for
+*'item in items'
+*items = source data Array
+*item = alias of iterated array element 
+*Has full access to parent scope properties.
+*Support second argument for the index of current item.
+*Can iterate value of array.
+*Support second argument for the property's name.
+*During rendering, v-for uses inplace-patch.
+===
+<ul id="example-2">
+  <li v-for="(item, index) in items">
+    {{ parentMessage }} - {{ index }} - {{ item.message }}
+  </li>
+</ul>
+
+<div v-for="(value, name) in object">
+  {{ name }}: {{ value }}
+</div>
+---
+<ul id="v-for-object" class="demo">
+  <li v-for="value in object">
+    {{ value }}
+  </li>
+</ul>
+
+new Vue({
+  el: '#v-for-object',
+  data: {
+    object: {
+      title: 'How to do lists in Vue',
+      author: 'Jane Doe',
+      publishedAt: '2016-04-10'
+    }
+  }
+})
+===
+
+'of' can be used instead of 'in'
+*This is closer to JS syntax for iterators.
+===
+<div v-for="item of items"></div>
+===
+
+When iterating over an object, 
+the order is based on the enumeration order of Object.keys().
+This is not guaranteed to be consistent across JS engine implementations.
+
+
+1. Maintaining state
+
+inplace-patch 
+*Suitable when list render output does not 
+*rely on child component state, or temporary DOM state. 
+*(eg. form input values)
+===
+<div v-for="item in items" v-bind:key="item.id">
+  <!-- content -->
+</div>
+===
+*Recommended : provide a 'key' attribute with v-for whenever possible.
+*If the iterated DOM content is simple/ delying on the default behaviour
+*for performance.
+*Not to use non-primitive(objects, arrays) values as 'v-for' keys.
+
+
+
+2. Array Change Detection
+*Vu wraps an observed array's mutation methods.
+*Mutation methods will trigger view updates.
+push()
+pop()
+shift()
+unshift()
+splice()
+sort()
+reverse()
+*mutation methods
+---
+
+filter()
+concat()
+slice()
+*Does not mutate the original array.
+*Returns a new array.
+===
+example1.items = example1.items.filter(function (item) {
+  return item.message.match(/Foo/)
+})
+*Replace an Array
+*VueJs does not re-render the entire list. (improves performance)
+===
+
+
+3. Caveats(Warnings, Cautions)
+
+(Due to modern JS limitations)
+Vue cannot detect the following changes in array.
+
+*1. Directly set an item with the index
+===
+vm.items[indexOfItem] = newValue
+===
+
+*2. Modify the length of the array
+===
+vm.items.length = newLength
+===
+
+*1&*2
+===
+var vm = new Vue({
+  data: {
+    items: ['a', 'b', 'c']
+  }
+})
+vm.items[1] = 'x' // is NOT reactive
+vm.items.length = 2 // is NOT reactive
+
+*To overcome previous caveat, triggering state updates is must.
+// Vue.set
+Vue.set(vm.items, indexOfItem, newValue)
+or
+vm.$set(vm.items, indexOfItem, newValue)
+
+// Array.prototype.splice
+vm.items.splice(indexOfItem, 1, newValue)
+or
+vm.items.splice(newLength)
+
+*'vm.$set' is an alias for the global 'Vue.set'
+===
+
+
+(Due to modern JS limitations)
+Vue cannot detect the property addition/deletion.
+
+===
+var vm = new Vue({
+  data: {
+    a: 1
+  }
+})
+// `vm.a` is now reactive
+
+vm.b = 2
+// `vm.b` is NOT reactive
+*Vue does not allow dynamically adding new root-level reactive properties
+*to an already created instance.
+
+Vue.set(object, propertyName, value)
+
+---
+
+var vm = new Vue({
+  data: {
+    userProfile: {
+      name: 'Anika'
+    }
+  }
+})
+
+Vue.set(vm.userProfile, 'age', 27)
+or
+vm.$set(vm.userProfile, 'age', 27)
+===
+
+
+Object.assign()
+_.extend()
+*In case of assigning a number of new properties to an existing object
+*Creating a fresh new object with properties from both objects is must.
+===
+vm.userProfile = Object.assign({}, vm.userProfile, {
+  age: 27,
+  favoriteColor: 'Vue Green'
+})
+===
+
+
+4. Displaying Filtere/Sorted Results.
+
+computed : {}
+methods : {}
+*Filtered or sorted version of an array 
+*without actually mutating or resetting the original data. 
+
+===
+<li v-for="n in evenNumbers">{{ n }}</li>
+
+data: {
+  numbers: [ 1, 2, 3, 4, 5 ]
+},
+computed: {
+  evenNumbers: function () {
+    return this.numbers.filter(function (number) {
+      return number % 2 === 0
+    })
+  }
+}
+---
+
+<li v-for="n in even(numbers)">{{ n }}</li>
+
+data: {
+  numbers: [ 1, 2, 3, 4, 5 ]
+},
+methods: {
+  even: function (numbers) {
+    return numbers.filter(function (number) {
+      return number % 2 === 0
+    })
+  }
+}
+===
+
+
+5. 'v-for' with a range
+*takes integer.
+===
+<div>
+  <span v-for="n in 10">{{ n }} </span>
+</div>
+*Must create Vue instance for correct output
+===
+
+6. 'v-for' on a '<template>'
+*Can render multiple templates
+===
+<ul>
+  <template v-for="item in items">
+    <li>{{ item.msg }}</li>
+    <li class="divider" role="presentation"></li>
+  </template>
+</ul>
+===
+
+7. 'v-for' with 'v-if'
+*Remember this is not recommended!
+*Priority : v-for > v-if
+===
+<li v-for="todo in todos" v-if="!todo.isComplete">
+  {{ todo }}
+</li>
+*Can be useful sometimes.
+*The above only renders the todos that are not complete.
+---
+<ul v-if="todos.length">
+  <li v-for="todo in todos">
+    {{ todo }}
+  </li>
+</ul>
+<p v-else>No todos left!</p>
+*Conditionally skip execution of the loop
+===
+
+8.'v-for' with a component
+===
+<my-component v-for="item in items" :key="item.id"></my-component>
+*Can directly use 'v-for' on a custom component.
+*2.2.0+ 'key' is required.
+===
+
+Because components have isolated scopes of their own,
+passing any data to the component is not possible.
+
+To pass iterated data into the component,
+props must be used.
+===
+<my-component
+  v-for="(item, index) in items"
+  v-bind:item="item"
+  v-bind:index="index"
+  v-bind:key="item.id"
+></my-component>
+===
+
+Reason for not injecting 'item' into the component
+*1. It makes the component tightly coupled to 'v-for'.
+*2. Making clear the source of data will be helpful for reusing the data.
+
+link : https://vuejs.org/v2/guide/list.html#v-for-with-a-Component
+* $emit() : Toggles event in current instance.
+
+
+----------------------------
+
+VIII. Event Handling 
+
+1. Listening to Events
+v-on:
+===
+<div id="example-1">
+  <button v-on:click="counter += 1">Add 1</button>
+  <p>The button above has been clicked {{ counter }} times.</p>
+</div>
+
+var example1 = new Vue({
+  el: '#example-1',
+  data: {
+    counter: 0
+  }
+})
+===
+
+2. Method Event Handlers
+===
+<div id="example-2">
+  <!-- `greet` is the name of a method defined below -->
+  <button v-on:click="greet">Greet</button>
+</div>
+
+var example2 = new Vue({
+  el: '#example-2',
+  data: {
+    name: 'Vue.js'
+  },
+  // define methods under the `methods` object
+  methods: {
+    greet: function (event) {
+      // `this` inside methods points to the Vue instance
+      alert('Hello ' + this.name + '!')
+      // `event` is the native DOM event
+      if (event) {
+        alert(event.target.tagName)
+      }
+    }
+  }
+})
+
+// you can invoke methods in JavaScript too
+example2.greet() // => 'Hello Vue.js!'
+===
+
+
+3. Methods in Inline Handlers
+===
+<div id="example-3">
+  <button v-on:click="say('hi')">Say hi</button>
+  <button v-on:click="say('what')">Say what</button>
+</div>
+
+new Vue({
+  el: '#example-3',
+  methods: {
+    say: function (message) {
+      alert(message)
+    }
+  }
+})
+
+---
+
+<button v-on:click="warn('Form cannot be submitted yet.', $event)">
+  Submit
+</button>
+
+// ...
+methods: {
+  warn: function (message, event) {
+    // now we have access to the native event
+    if (event) event.preventDefault()
+    alert(message)
+  }
+}
+*$event = original DOM event
+===
+
+
+4. Event Modifiers
+*To write 'event.preventDefault()' & 'event.stopPropagation()' easily.
+v-on:
+.stop
+.prevent
+.capture
+.self
+.once
+.passive
+
+===
+*the click event's propagation will be stopped
+<a v-on:click.stop="doThis"></a>
+
+*the submit event will no longer reload the page
+<form v-on:submit.prevent="onSubmit"></form>
+
+*modifiers can be chained
+<a v-on:click.stop.prevent="doThat"></a>
+
+*just the modifier
+<form v-on:submit.prevent></form>
+
+*use capture mode when adding the event listener
+*i.e. an event targeting an inner element is handled here before being handled by that element
+<div v-on:click.capture="doThis">...</div>
+
+*only trigger handler if event.target is the element itself
+*i.e. not from a child element
+<div v-on:click.self="doThat">...</div>
+
+*the click event will be triggered at most once
+<a v-on:click.once="doThis"></a>
+
+*the scroll event's default behavior (scrolling) will happen
+*immediately, instead of waiting for `onScroll` to complete
+*in case it contains `event.preventDefault()
+<div v-on:scroll.passive="onScroll">...</div>
+
+*'.passive' modifier is especially useful for improving performance on mobile devices.
+
+Don’t use '.passive' and '.prevent' together.
+*'.prevent' will be igonred and browser will show warnings.
+*'.passive' communicates to the browser that you don’t want to prevent the event’s default behavior.
+===
+
+Modifiers' chain order is left to right.
+*ex: 'v-on:click.prevent.self' - prevent all clicks.
+*ex: 'v-on:click.self.prevent' - Only prevent clicks on the element itself.
+
+
+5. Key Modifiers
+*Vue allows adding key modifiers for v-on when listening for key events
+===
+*only call `vm.submit()` when the `key` is `Enter`
+<input v-on:keyup.enter="submit">
+
+*Can directly use any valid key names exposed via KeyboardEvent.key 
+*as modifiers by converting them to kebab-case.
+
+<input v-on:keyup.page-down="onPageDown">
+*The handler will only be called if $event.key is equal to 'PageDown'.
+===
+
+
+6. Key Codes
+*keyCode events is deprecated.
+*May not be supported in the future.
+*Some keys have different key values depending on browser and its version.
+===
+// enable `v-on:keyup.f1`
+Vue.config.keyCodes.f1 = 112
+*define custom key modifier aliases via the global 'config.keyCodes' object.
+===
+
+
+
+7. System Modifiers
+.ctrl
+.alt
+.shift
+.meta = windows Key / Mac command key
+
+*modifier keys are different from regular keys 
+*and when used with keyup events.
+*They have to be pressed when the event is emitted.
+
+*keyup.ctrl will only trigger if you release a key while holding down ctrl. 
+*It won’t trigger if you release the ctrl key alone. 
+*If you do want such behaviour, use the keyCode for ctrl instead: keyup.17.
+
+.exact = triggers event only when exact (combinations)keys are pressed.
+===
+*this will fire even if Alt or Shift is also pressed
+<button @click.ctrl="onClick">A</button>
+
+*this will only fire when Ctrl and no other keys are pressed
+<button @click.ctrl.exact="onCtrlClick">A</button>
+
+*this will only fire when no system modifiers are pressed
+<button @click.exact="onClick">A</button>
+===
+
+.left
+.right
+.middle
+*Triggered by a specific mouse button.
+
+Benefits of using v-on
+===
+1. Easy to locate handler function
+*It is written right in the HTML template.
+
+2. Don't need to attach event listeners
+*Vue does this, making code clear with pure logics.
+
+3. Don't need to clean up the listeners
+*Vue clean them all after ViewModel is destoryed.
+===
+
+----------------------------
+
+IX. Form Input Bindings 
+
+
+1.Basic Usage 
+'v-model' directive's Caveats
+
+*Ignores initial value, checked, or selected attributes found on any form elements.
+*Reason : Only treats Vue instance data as the true data.
+*Solution : Declare initial value on the JS side, inside the 'data' property of the component.
+
+'v-model' use 
+*different properties
+*emits different events
+*for different input elements.
+
+*text/textarea use 'value' property & 'input' event.
+*checkbox/radiobutton use 'checked' property & 'change' event.
+*select fields use 'value' as a prop and 'change' as an event.
+
+
+*Problem : 'v-model' does not update during IME (jp,cn,kr).
+*Solution : use 'input' event.
+
+---
+
+link : https://vuejs.org/v2/guide/forms.html#Text
+
+*Problem : '<textarea>{{text}}</textarea>' won't work.
+*Solution : use 'v-model'.
+
+If nothing is selected, <select> returns 'unselected' state.
+*Problem : In iOS, not able to select first item.
+*Reason : It does not fire a 'change' event.
+*Solution : Provide 'disabled' option with an empty value.
+
+
+v-for <select> sample
+===
+<select v-model="selected">
+  <option v-for="option in options" v-bind:value="option.value">
+    {{ option.text }}
+  </option>
+</select>
+<span>Selected: {{ selected }}</span>
+
+new Vue({
+  el: '...',
+  data: {
+    selected: 'A',
+    options: [
+      { text: 'One', value: 'A' },
+      { text: 'Two', value: 'B' },
+      { text: 'Three', value: 'C' }
+    ]
+  }
+})
+===
+
+
+2. Value Bindings
+
+===
+CheckBox
+<input
+  type="checkbox"
+  v-model="toggle"
+  true-value="yes"
+  false-value="no"
+>
+
+// when checked:
+vm.toggle === 'yes'
+// when unchecked:
+vm.toggle === 'no'
+
+*'true-value'/'false-value' don't affect input's 'value' attribute.
+
+---
+
+Radio 
+<input type="radio" v-model="pick" v-bind:value="a">
+
+// when checked:
+vm.pick === vm.a
+
+---
+
+Select Options
+<select v-model="selected">
+  <!-- inline object literal -->
+  <option v-bind:value="{ number: 123 }">123</option>
+</select>
+
+// when selected:
+typeof vm.selected // => 'object'
+vm.selected.number // => 123
+
+===
+
+
+3. Modifiers
+
+v-model
+*syncs the input with the data after each 'input' event. (Not when IME)
+
+.lazy = to sync after 'change' events
+===
+<!-- synced after "change" instead of "input" -->
+<input v-model.lazy="msg" >
+===
+
+.number = to automatically typecaset as a number
+*If the value cannot be parsed with parseFloat(), original value is returned.
+===
+<input v-model.number="age" type="number">
+===
+
+.trim = to trim user's input automatically
+===
+<input v-model.trim="msg">
+===
+
+
+4. v-model with components
+*Reusable input with customized behaviour is buildable.
+*v-model can be used as attribute in these components.
+
+
+----------------------------
+
+X. Component Basics
+
+
+1. Reusable Component
+
+*1.Components are Reusable
+*2.When the same components are used more than once, new instances are created.
+*3. 'data' must be a function to maintain independently.
+===
+data: function () {
+  return {
+    count: 0
+  }
+}
+*If 'data' is not function, all the same components will share the 'data's value.
+===
+
+
+2. Organizing Components
+*To use components in templates(header, footer, sidebar etc)
+*they must be registered so that Vue knows about them.
+===
+Vue.component('my-component-name', {
+  // ... options ...
+})
+*this is global component.
+===
+
+
+3.Passing Data to Child Components with props
+
+props = custom attributes you can register on a component.
+*When a value is passed to a prop attribute, it becomes a property on that component instance.
+===
+Vue.component('blog-post', {
+  props: ['title'],
+  template: '<h3>{{ title }}</h3>'
+})
+*A component can have as many props as you’d like
+*Any value can be passed to any prop.
+
+<blog-post title="My journey with Vue"></blog-post>
+<blog-post title="Blogging with Vue"></blog-post>
+<blog-post title="Why Vue is so fun"></blog-post>
+
+---
+
+array 
+
+new Vue({
+  el: '#blog-post-demo',
+  data: {
+    posts: [
+      { id: 1, title: 'My journey with Vue' },
+      { id: 2, title: 'Blogging with Vue' },
+      { id: 3, title: 'Why Vue is so fun' }
+    ]
+  }
+})
+
+<blog-post
+  v-for="post in posts"
+  v-bind:key="post.id"
+  v-bind:title="post.title"
+></blog-post>
+*Useful when fetching posts from an API.
+===
+
+
+4. A Single Root Element.

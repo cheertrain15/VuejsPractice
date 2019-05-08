@@ -238,8 +238,8 @@ var example17 = new  Vue({
 var example18 = new Vue({
    el : '#app18',
    data : {
-      loginType : 'username'
-      
+      loginType : 'username',
+      ok : false
    },
    methods : {
       change : function(){
@@ -251,3 +251,129 @@ var example18 = new Vue({
       }
    }
 })
+
+var example19 = new Vue({
+   el : '#app19',
+   data : {
+      example : [
+         {message : 'MPNO'},
+         {message : 'ZZQK'},
+         {message : 'UGSJ'},
+         {message : 'SDWF'}
+      ]
+   }
+})
+
+var example20 = new Vue({
+   el : '#app20',
+   data : {
+      sample : {
+         name : 'Anika'
+      }
+   }
+})
+
+var app21 = new Vue({
+   el : '#app21',
+   data : {
+      numbers : [1,2,3,4,5,6]
+   },
+   computed : {
+      evenNumbers: function(){
+         return this.numbers.filter(function(number){
+            return number % 2 === 0
+         })
+      }
+   }
+})
+
+var app22 = new Vue({
+   el : '#app22',
+   data : {
+      numbers : [1,2,3,4,5,6]
+   },
+   methods : {
+      even : function(numbers){
+         return numbers.filter(function(number){
+            return number % 2 === 0
+         })
+      }
+   }
+})
+
+var vRange = new Vue({
+   el : '#vForRange',
+   data : {
+      greetings : "Hello!"
+   }
+})
+
+new Vue({
+   el : '#inlineMethods',
+   data : {
+      name : 'Hannin'
+   },
+   methods : {
+      say : function(msg){
+         console.log(this.name + ' : ' + msg + '.')
+      },
+      yell : function(msg){
+         console.log(this.name + ' : ' + msg + '!!')
+      }
+   }
+})
+
+ const eventModifierMethod = new Vue({
+   el : '#eventModifiersMethod',
+   methods : {
+      onSubmit : function(){
+         console.log('SubmittedA')
+      }
+   }
+ })
+
+ const eventModifier = new Vue({
+   el : '#eventModifiers',
+   methods : {
+      onSubmit : function(){
+         console.log('SubmittedB')
+      }
+   }
+})
+
+let scroll = new Vue({
+   el: '#scroll',
+   methods : {
+      onScroll : function(){
+         console.log('scrolling');
+      }
+   }
+})
+
+let keymodifier = new Vue({
+   el : '#keyModifier',
+   methods : {
+      pop : function(){
+         console.log('poop')
+      },
+      one :function(){
+         console.log('one one!')
+      },
+      end : function(){
+         console.log('end of the')
+      },
+      up : function(){
+         console.log('upup')
+      },
+      clicked : function(){
+         console.log('OO');
+      }
+   }
+})
+
+new Vue({
+   el: '#example-3',
+   data: {
+     ASD: []
+   }
+ })
