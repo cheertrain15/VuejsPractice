@@ -1478,3 +1478,65 @@ Vue.component('custom-input', {
 
 6. Content Distribution with Slots
 
+<slot>
+*useful for passing content to a component
+*Just add the slot in the desired area.
+===
+<alert-box>
+  Something bad happened.
+</alert-box>
+
+Vue.component('alert-box', {
+  template: `
+    <div class="demo-alert-box">
+      <strong>Error!</strong>
+      <slot></slot>
+    </div>
+  `
+})
+
+*Correct Output in Inspection Mode
+<div class="demo-alert-box">
+  <strong>Error!</strong>
+</div>
+===
+
+
+7. Dynamic Components
+
+is
+*special attribute
+*shows component or content that satisfies the string value of 'is'.
+===
+<!-- Component changes when currentTabComponent changes -->
+<component v-bind:is="currentTabComponent"></component>
+
+*CurrentTabComponent can contain either:
+*1. The name of a registered component
+*2. Component’s options object
+*link : https://jsfiddle.net/chrisvfritz/o3nycadu/
+
+<!-- component changes when currentView changes -->
+<component v-bind:is="currentView"></component>
+
+<!-- necessary because `<my-row>` would be invalid inside -->
+<!-- a `<table>` element and so would be hoisted out      -->
+<table>
+  <tr is="my-row"></tr>
+</table>
+===
+
+8. DOM template parsing Caveats
+
+*Consider the tags that are valid and their restrictions.
+===
+<table>
+  <tr is="blog-post-row"></tr>
+</table>
+
+*'is' won't work properly on the following cases.
+*String templates (e.g. template: '...')
+*Single-file (.vue) components
+*<script type="text/x-template">
+
+

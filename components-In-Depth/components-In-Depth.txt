@@ -1,0 +1,1179 @@
+I. Component Registration 
+II. Props
+III. Custom Events
+IV. Slots
+V. Dynamic & Async Component
+VI. Handling Edge Cases
+==============================
+
+I. Component Registration 
+
+1.Component Names
+
+  Component format
+  ===
+    Vue.component('my-component-name', { /* ... */ })
+    *Follow W3C rules for naming component.(lower-case, hyphen)
+  ===
+
+  kebab-case
+  ===
+    Vue.component('my-component-name', { /* ... */ })
+    *Only kebab-case names are valid directly in the DOM 
+    *(i.e. non-string templates).
+  ===
+
+  PascalCase
+  ===
+    Vue.component('MyComponentName', { /* ... */ })
+  ===
+
+
+2. Global Registration
+  ===
+    Vue.component('component-a', { /* ... */ })
+    Vue.component('component-b', { /* ... */ })
+    Vue.component('component-c', { /* ... */ })
+    *These components are global.
+    *Can be used in the template of any root Vue instance (new Vue) 
+    *created after registration. 
+
+    new Vue({ el: '#app' })
+
+    <div id="app">
+      <component-a></component-a>
+      <component-b></component-b>
+      <component-c></component-c>
+    </div>
+    *All three of these components will also be available inside each other.
+  ===
+
+
+3. Local Registration
+
+  Meaningless globals will make users to download unnecessary data.
+  ===
+    var ComponentA = { /* ... */ }
+    var ComponentB = { /* ... */ }
+    var ComponentC = { /* ... */ }
+
+    new Vue({
+      el: '#app',
+      components: {
+        'component-a': ComponentA,
+        'component-b': ComponentB
+      }
+    })
+    *The key will be the name of the custom element
+    *The value will contain the options object for the component.
+  ===
+
+  Locally registered components are not also available in subcomponents
+  ===
+    var ComponentA = { /* ... */ }
+
+    var ComponentB = {
+      components: {
+        'component-a': ComponentA
+      },
+      // ...
+    }
+
+    -or-
+
+  import ComponentA from './ComponentA.vue'
+
+  export default {
+    components: {
+      ComponentA
+    },
+    // ...
+  }  
+  *Using ES2015 modules (Babel/Webpack)
+  *In ES2015+, placing a variable name like ComponentA inside an object
+  *is shorthand for ComponentA: ComponentA.
+  
+  The name of the variable is both:
+  *1.The custom element name to use in the template, and
+  *2.The name of the variable containing the component options
+
+  ===
+
+4 Module Systems
+
+import/require
+
+1. Local Registration in a Module System
+  *Create a sperate directory for components.
+  *Each component in its own file.
+  *Import each components you want.
+  ===
+    import ComponentA from './ComponentA'
+    import ComponentC from './ComponentC'
+
+    export default {
+      components: {
+        ComponentA,
+        ComponentC
+      },
+      // ...
+    }
+  *Now both ComponentA and ComponentC can be used inside 
+  *ComponentB‘s template.
+  ===
+
+2. Automatic Global Registration of Base Components
+
+  base components
+  *Components that only wrapping an element (like an input or a button).
+  *They tend to be used very frequently across your components.
+  ===
+    import BaseButton from './BaseButton.vue'
+    import BaseIcon from './BaseIcon.vue'
+    import BaseInput from './BaseInput.vue'
+
+    export default {
+      components: {
+        BaseButton,
+        BaseIcon,
+        BaseInput
+      }
+    }
+
+    <BaseInput
+      v-model="searchText"
+      @keydown.enter="search" />
+    <BaseButton @click="search">
+      <BaseIcon name="search"/>
+    </BaseButton>
+  ===
+
+  Can use 'require.context' (Only when using Webpack / Vue CLI3+)
+  *'require.context' - globally register desired base components.
+
+  ===
+    import Vue from 'vue'
+    import upperFirst from 'lodash/upperFirst'
+    import camelCase from 'lodash/camelCase'
+
+    const requireComponent = require.context(
+      // The relative path of the components folder
+      './components',
+      // Whether or not to look in subfolders
+      false,
+      // The regular expression used to match base component filenames
+      /Base[A-Z]\w+\.(vue|js)$/
+    )
+
+    requireComponent.keys().forEach(fileName => {
+      // Get component config
+      const componentConfig = requireComponent(fileName)
+
+      // Get PascalCase name of component
+      const componentName = upperFirst(
+        camelCase(
+          // Gets the file name regardless of folder depth
+          fileName
+            .split('/')
+            .pop()
+            .replace(/\.\w+$/, '')
+        )
+      )
+
+
+      // Register component globally
+      Vue.component(
+        componentName,
+        // Look for the component options on `.default`, which will
+        // exist if the component was exported with `export default`,
+        // otherwise fall back to module's root.
+        componentConfig.default || componentConfig
+      )
+    })
+
+    *Global registration must take place 
+    *before the root Vue instance is created (with new Vue).
+  ===
+
+
+II. Props 
+
+  1. Prop Casing(camelCase vs kebab-case)
+
+  *in-DOM templates kebab-cased names are recommended
+  *Reason : HTML attribute names are case-insensitive.
+  ===
+    Vue.component('blog-post', {
+    // camelCase in JavaScript
+    props: ['postTitle'],
+    template: '<h3>{{ postTitle }}</h3>'
+    })
+
+    <!-- kebab-case in HTML -->
+    <blog-post post-title="hello!"></blog-post>
+  ===
+
+  2. Props Types
+  ===
+    props: ['title', 'likes', 'isPublished', 'commentIds', 'author']
+
+    props: {
+      title: String,
+      likes: Number,
+      isPublished: Boolean,
+      commentIds: Array,
+      author: Object,
+      callback: Function,
+      contactsPromise: Promise // or any other constructor
+    }
+  *Documents your component
+  *Warn users in the browser’s JavaScript console if they pass the wrong type. 
+  ===
+
+  3. Passing Static or Dynamic Props
+
+    ===
+      Static Props
+      <blog-post title="My journey with Vue"></blog-post>
+
+      Dynamic Props
+      <!-- Dynamically assign the value of a variable -->
+      <blog-post v-bind:title="post.title"></blog-post>
+
+      <!-- Dynamically assign the value of a complex expression -->
+      <blog-post
+        v-bind:title="post.title + ' by ' + post.author.name"
+      ></blog-post>
+    *Any type of value can actually be passed to a prop.
+    ===
+
+    link : https://vuejs.org/v2/guide/components-props.html#Passing-Static-or-Dynamic-Props
+
+
+    *Passing Number 
+    ===
+      <!-- Even though `42` is static, we need v-bind to tell Vue that -->
+      <!-- this is a JavaScript expression rather than a string.       -->
+      <blog-post v-bind:likes="42"></blog-post>
+
+      <!-- Dynamically assign to the value of a variable. -->
+      <blog-post v-bind:likes="post.likes"></blog-post>
+    ===
+
+    *Passing Boolean
+    ===
+      <!-- Including the prop with no value will imply `true`. -->
+      <blog-post is-published></blog-post>
+
+      <!-- Even though `false` is static, we need v-bind to tell Vue that -->
+      <!-- this is a JavaScript expression rather than a string.          -->
+      <blog-post v-bind:is-published="false"></blog-post>
+
+      <!-- Dynamically assign to the value of a variable. -->
+      <blog-post v-bind:is-published="post.isPublished"></blog-post>
+    ===
+
+    *Passing an Object
+    ===
+      <!-- Even though the object is static, we need v-bind to tell Vue that -->
+      <!-- this is a JavaScript expression rather than a string.             -->
+      <blog-post
+        v-bind:author="{
+          name: 'Veronica',
+          company: 'Veridian Dynamics'
+        }"
+      ></blog-post>
+
+      <!-- Dynamically assign to the value of a variable. -->
+      <blog-post v-bind:author="post.author"></blog-post>
+    ===
+
+
+    *Passing the properties of an Object
+    ===
+      <blog-post v-bind="post"></blog-post>
+
+      * is equal to 
+
+      <blog-post
+        v-bind:id="post.id"
+        v-bind:title="post.title"
+      ></blog-post>
+    ===
+
+  4. One-way Data Flow
+    *parent component -(data transfer)-> child component (O)
+    *parent component <-(data transfer)- child component (X)
+
+    *If parent is updated, so the child.  
+    *So do not attempt to mutate a prop inside a child.
+
+    ===
+    *The prop is used to pass in an initial value.
+    *The child component wants to use it as a local data property afterwards.
+
+    props: ['initialCounter'],
+    data: function () {
+      return {
+        counter: this.initialCounter
+      }
+    }
+
+    *The prop is passed in as a raw value that needs to be transformed
+    props: ['size'],
+    computed: {
+      normalizedSize: function () {
+        return this.size.trim().toLowerCase()
+      }
+    }
+
+    *arrays are passed as reference.
+    *any changes in array by child component will affect parent.
+    ===
+
+  5. Prop Validation
+
+    Components can specify requirements for its props.
+    This is useful when developing a component that’s intended to be used by others.
+    ===
+    Vue.component('my-component', {
+      props: {
+        // Basic type check (`null` and `undefined` values will pass any type validation)
+        propA: Number,
+        // Multiple possible types
+        propB: [String, Number],
+        // Required string
+        propC: {
+          type: String,
+          required: true
+        },
+        // Number with a default value
+        propD: {
+          type: Number,
+          default: 100
+        },
+        // Object with a default value
+        propE: {
+          type: Object,
+          // Object or array defaults must be returned from
+          // a factory function
+          default: function () {
+            return { message: 'hello' }
+          }
+        },
+        // Custom validator function
+        propF: {
+          validator: function (value) {
+            // The value must match one of these strings
+            return ['success', 'warning', 'danger'].indexOf(value) !== -1
+          }
+        }
+      }
+    })
+    *When prop validation fails, Vue will produce a console warning.
+    * (if using the development build)
+
+    *Note that props are validated before a component instance is created.
+    *Instance properties (e.g. data, computed, etc) 
+    *will not be available inside default or validator functions.
+    ===
+
+
+  6. Type checks
+
+    instanceof
+    ===
+      function Person (firstName, lastName) {
+        this.firstName = firstName
+        this.lastName = lastName
+      }
+
+      Vue.component('blog-post', {
+        props: {
+          author: Person
+        }
+      })
+    ===
+
+
+  7. Non-Prop Attributes
+
+    *non-prop attribute : arbitrary attributes : 
+    *an attribute that is passed to a component, but does not have a corresponding prop defined.
+    *added to the component's root element.
+    ===
+      <bootstrap-date-input data-date-picker="activated"></bootstrap-date-input>
+      *data-date-picker="activated" attribute will automatically be added 
+      *to the root element of bootstrap-date-input.
+    ===
+
+    1. Replacing/Merging with Existing Attributes
+    *'class' and 'style' attributes are merged, not overwritten.
+
+    2. Disabling Attribute Inheritance.
+    *set 'inheritAttrs: false' in the component’s options
+    ===
+      Vue.component('my-component', {
+        inheritAttrs: false,
+        // ...
+      })
+      *'inheritAttrs: false' option does not affect 'style' and 'class' bindings.
+    ===
+
+    ===
+    <base-input
+      v-model="username"
+      required
+      placeholder="Enter your username"
+    ></base-input>
+    *To use base components more like raw HTML elements
+    *without having to care about which element is actually at its root.
+    ===
+
+
+III. Custom Events
+
+  1. Event Names
+      *Don't provide any automatic case transformation.
+      *events names must exactly math the name used to listen to the event.
+      *always use kebab-case for event names.
+    ===
+      'v-on:myEvent' becomes 'v-on:myevent'
+      *Due to HTML's case insensivity.
+    ===
+
+  2. Customizing Component
+    *'v-model' on component used value as the 'prop' and input.
+
+
+  3.Binding Native Events to Components
+    'v-on:[condition].native'
+    *To listen directly to a native event on the root element.
+    ===
+      <base-input v-on:focus.native="onFocus"></base-input>
+    ===
+
+    $listeners
+    *Containing an object of listeners being used on the component. 
+    ===
+      {
+        focus: function (event) { /* ... */ }
+        input: function (value) { /* ... */ },
+      }
+    ===
+
+    *Can forward all event listeners on the component 
+    *to a specific child element with v-on="$listeners"
+
+    ===
+    <base-input v-on:focus.native="onFocus"></base-input>
+    
+    Vue.component('base-input', {
+      inheritAttrs: false,
+      props: ['label', 'value'],
+      computed: {
+        inputListeners: function () {
+          var vm = this
+          // `Object.assign` merges objects together to form a new object
+          return Object.assign({},
+            // We add all the listeners from the parent
+            this.$listeners,
+            // Then we can add custom listeners or override the
+            // behavior of some listeners.
+            {
+              // This ensures that the component works with v-model
+              input: function (event) {
+                vm.$emit('input', event.target.value)
+              }
+            }
+          )
+        }
+      },
+      template: `
+        <label>
+          {{ label }}
+          <input
+            v-bind="$attrs"
+            v-bind:value="value"
+            v-on="inputListeners"
+          >
+        </label>
+      `
+    })
+    ===
+
+  4. '.sync' modifier 
+    *For two-way binding.
+
+    update:myPropName
+    *Could communicate the intent of assigning a new value
+    ===
+      this.$emit('update:title', newTitle)
+
+      <text-document
+        v-bind:title="doc.title"
+        v-on:update:title="doc.title = $event"
+      ></text-document>
+
+      --short hand--
+
+      <text-document v-bind:title.sync="doc.title"></text-document>
+      *'.sync' modifier does not work with expressions.
+      *Must only provide the name of the desired property for binding.
+      *(like v-model)
+    ===
+
+    v-bind.sync="doc"
+    *Each property in the 'doc' object will be passed.
+    *adds 'v-on' update listeners in each property.
+    ===
+      v-bind.sync=”{ title: doc.title }”
+      *This does not work.
+      *Reason : To many things to be considered for parsing.
+      *Must only provide the name of the desired property for binding.
+    ===
+
+
+  IV.Slot
+
+    1. Slot Content
+
+    <slot> 
+    *distributes outlets for content.
+    *extra template code or component.
+    ===
+      <navigation-link url="/profile">
+        Your Profile
+      </navigation-link>
+
+      *<navigation-link>
+      <a
+        v-bind:href="url"
+        class="nav-link"
+      >
+        <slot></slot>
+      </a>
+
+      *<slot></slot>'s format.
+      *HTML
+      <navigation-link url="/profile">
+        <!-- Add a Font Awesome icon -->
+        <span class="fa fa-user"></span>
+        Your Profile
+      </navigation-link>
+
+      *Component
+      <navigation-link url="/profile">
+        <!-- Use a component to add an icon -->
+        <font-awesome-icon name="user"></font-awesome-icon>
+        Your Profile
+      </navigation-link>
+    ===
+
+    2. Compliation Scope
+    ===
+    <navigation-link url="/profile">
+      Logged in as {{ user.name }}
+    </navigation-link>
+
+
+    <navigation-link url="/profile">
+      Clicking here will send you to: {{ url }}
+      <!--
+      The `url` will be undefined, because this content is passed
+      _to_ <navigation-link>, rather than defined _inside_ the
+      <navigation-link> component.
+      -->
+    </navigation-link>
+
+    *Slot has access to the same instance properties.
+    *Slot does not have access to <navigation-link>‘s scope.
+    ===
+
+    Everything in the parent template is compiled in parent scope.
+    Everything in the child template is compiled in the child scope.
+
+    
+    3. Fallback Content 
+    *Fallback (i.e. default) content for a slot
+    *to be rendered only when no content is provided.
+    *just like 'switch's default'.
+    ===
+      *<submit-button> component.
+      <button type="submit">
+        <slot>Submit</slot>
+      </button>
+
+      *<submit-button> in parent's component
+      <submit-button></submit-button>
+
+      *render(no content provided)
+      <button type="submit">
+        Submit
+      </button>
+
+      *render(content provided)
+      <submit-button>
+        Save
+      </submit-button>
+
+      <button type="submit">
+        Save
+      </button>
+    ===
+
+    4. Named Slots
+    ===
+    <div class="container">
+      <header>
+        <slot name="header"></slot>
+      </header>
+      <main>
+        <slot></slot>
+      </main>
+      <footer>
+        <slot name="footer"></slot>
+      </footer>
+    </div>
+    *<slot> without name has the name 'default'.
+    ===
+
+    To provide content to named slots :  Use the v-slot directive on a <template>.
+    ===
+      <base-layout>
+        <template v-slot:header>
+          <h1>Here might be a page title</h1>
+        </template>
+
+        <p>A paragraph for the main content.</p>
+        <p>And another one.</p>
+
+        <template v-slot:footer>
+          <p>Here's some contact info</p>
+        </template>
+      </base-layout>
+
+      --same as--
+      <base-layout>
+        <template v-slot:header>
+          <h1>Here might be a page title</h1>
+        </template>
+
+        <template v-slot:default>
+          <p>A paragraph for the main content.</p>
+          <p>And another one.</p>
+        </template>
+
+        <template v-slot:footer>
+          <p>Here's some contact info</p>
+        </template>
+      </base-layout>
+
+
+      *rendered
+      <div class="container">
+        <header>
+          <h1>Here might be a page title</h1>
+        </header>
+        <main>
+          <p>A paragraph for the main content.</p>
+          <p>And another one.</p>
+        </main>
+        <footer>
+          <p>Here's some contact info</p>
+        </footer>
+      </div>
+
+      *'v-slot' can only be added to a <template>.
+    ===
+
+
+    5.Scoped Slots
+    ===
+      *bind 'user' as an attribute to the <slot> element.
+      * = slot props
+      <span>
+        <slot v-bind:user="user">
+          {{ user.lastName }}
+        </slot>
+      </span>
+
+      <current-user>
+        <template v-slot:default="slotProps">
+          {{ slotProps.user.firstName }}
+        </template>
+      </current-user>
+
+      *slotProps name can be anything you want.
+    ===
+
+
+      1. Abbreviated Syntax for Lone Default Slots
+      ===
+        *only the default slot is provided content
+        <current-user v-slot:default="slotProps">
+          {{ slotProps.user.firstName }}
+        </current-user>
+
+        --short hand--
+        <current-user v-slot="slotProps">
+          {{ slotProps.user.firstName }}
+        </current-user>
+      ===
+
+      *The abbreviated syntax for default slot cannot be mixed with named slots
+      ===
+        <!-- INVALID, will result in warning -->
+        <current-user v-slot="slotProps">
+          {{ slotProps.user.firstName }}
+          <template v-slot:other="otherSlotProps">
+            slotProps is NOT available here
+          </template>
+        </current-user>
+      ===
+
+      *For multiple slots, use the full <template>.
+      ===
+        <current-user>
+          <template v-slot:default="slotProps">
+            {{ slotProps.user.firstName }}
+          </template>
+
+          <template v-slot:other="otherSlotProps">
+            ...
+          </template>
+        </current-user>
+      ===
+
+
+      2. Destructing Slot Props
+      *v-slot can actually accept any valid JavaScript expression 
+      *that can appear in the argument position of a function definition.
+      *ES2015 destructuring for pulling out specific slot props is possible.
+      * (single-file-components / modern browsers)
+      ===
+      <current-user v-slot="{ user: person }">
+        {{ person.firstName }}
+      </current-user>
+
+      *fallbacks
+      <current-user v-slot="{ user = { firstName: 'Guest' } }">
+        {{ user.firstName }}
+      </current-user>
+      ===
+
+    6. Dynamic Slot Names
+      *Dynamic directive arguments
+      ===
+        <base-layout>
+          <template v-slot:[dynamicSlotName]>
+            ...
+          </template>
+        </base-layout>
+      ===
+
+    7. Named Slots shorthand
+      *v-slot: = #
+      *ex: v-slot:header = #header
+    ===
+      <base-layout>
+        <template #header>
+          <h1>Here might be a page title</h1>
+        </template>
+
+        <p>A paragraph for the main content.</p>
+        <p>And another one.</p>
+
+        <template #footer>
+          <p>Here's some contact info</p>
+        </template>
+      </base-layout>
+
+      *To use shorthands
+      *Must always specify the name of the slot.
+      <current-user #default="{ user }">
+        {{ user.firstName }}
+      </current-user>
+    ===
+
+  V. Dynamic & Async Components
+  
+    1.'keep-alive' with Dynamic Components
+      *<keep-alive> - Maintain components' state or avoid re-rendering.
+      ===
+        <!-- Inactive components will be cached! -->
+        <keep-alive>
+          <component v-bind:is="currentTabComponent"></component>
+        </keep-alive>
+        *<keep-alive> requires the components being switched between to all have names.
+        *Either using the name option on a component, or through local/global registration.
+      ===
+
+      link : https://vuejs.org/v2/api/#keep-alive
+
+
+    2. Async Components
+
+      link : https://vuejs.org/v2/guide/components-dynamic-async.html#Async-Components
+
+      ===
+        Vue.component('async-example', function (resolve, reject) {
+          setTimeout(function () {
+            // Pass the component definition to the resolve callback
+            resolve({
+              template: '<div>I am async!</div>'
+            })
+          }, 1000)
+        })
+        ---
+        Vue.component('async-webpack-example', function (resolve) {
+          // This special require syntax will instruct Webpack to
+          // automatically split your built code into bundles which
+          // are loaded over Ajax requests.
+          require(['./my-async-component'], resolve)
+        })
+        ---
+        Vue.component(
+          'async-webpack-example',
+          // The `import` function returns a Promise.
+          () => import('./my-async-component')
+        )
+        ---
+        *using local registration.
+        new Vue({
+          // ...
+          components: {
+            'my-component': () => import('./my-async-component')
+          }
+        })
+      ===
+
+      1. Handling Loading State
+      ===
+        *The async component factory can also return an object 
+        const AsyncComponent = () => ({
+          // The component to load (should be a Promise)
+          component: import('./MyComponent.vue'),
+          // A component to use while the async component is loading
+          loading: LoadingComponent,
+          // A component to use if the load fails
+          error: ErrorComponent,
+          // Delay before showing the loading component. Default: 200ms.
+          delay: 200,
+          // The error component will be displayed if a timeout is
+          // provided and exceeded. Default: Infinity.
+          timeout: 3000
+        })
+      ===
+
+
+  VI. Handling Edge Cases
+    *Bending Vue's rules for achieving what you want.
+    *Explicit pros and cons exist.
+
+    1. Accessing the Root Instance
+        *root instance can be accessed with the '$root' property.
+        ===
+        // The root Vue instance
+        new Vue({
+          data: {
+            foo: 1
+          },
+          computed: {
+            bar: function () { /* ... */ }
+          },
+          methods: {
+            baz: function () { /* ... */ }
+          }
+        })
+
+        // Get root data
+        this.$root.foo
+
+        // Set root data
+        this.$root.foo = 2
+
+        // Access root computed properties
+        this.$root.bar
+
+        // Call root methods
+        this.$root.baz()
+
+        *Not recommended, use Vuex instead.
+      ===
+
+      2. Accessing the Parent Component Instance
+        *$parent - used to access the parent instance from a child.
+        *Recommend 'dependency injection'.
+
+      
+      3. Accessing Child Component Instances & Child Elements
+        *Using a reference ID to the child component using the 'ref' attribute.
+        ===
+          <base-input ref="usernameInput"></base-input>
+
+          this.$refs.usernameInput
+
+          <input ref="input">
+
+          methods: {
+            // Used to focus the input from the parent
+            focus: function () {
+              this.$refs.input.focus()
+            }
+          }
+
+          *Allowing the parent component to focus the input inside <base-input>
+          this.$refs.usernameInput.focus()
+          
+          *When 'ref' is used together with 'v-for', 
+          *the ref you get will be an array containing the child components 
+          *mirroring the data source.
+
+          *'$refs' can be used after the component is rendered.
+          *'$refs' is not reactive.
+          *avoid accessing '$refs' from within 'templates' or 'computed properties'.
+
+        ===
+
+
+      4. Dependency injection
+        *long-range props.
+        *better than $parent
+
+        *provide
+        *specify the data/methods we want to provide to ANY descendent components
+        *without exposing the entire instance.
+
+        *PROS
+        *allows us to more safely keep developing that component
+        *without fear that we might change/remove something 
+        *that a child component is relying on.
+
+        *ancestor components don’t need to know which descendants use the properties it provides
+        *descendant components don’t need to know where injected properties are coming from
+        
+
+        *CONS
+        *Couples components in your application, making refactoring more difficult.
+        *Provided properties are also not reactive.
+        
+        *TO MANIPULATE or UPDATE the central data use VUEX.
+        *(instead of DI, $parent , or $root).
+        ===
+          provide: function () {
+            return {
+              getMap: this.getMap
+            }
+          }
+          ---
+          inject: ['getMap']
+          *inject - to receive specific properties we’d like to add to that instance.
+        ===
+
+    2. Programmatic Event Listeners.
+
+      *Listen for an event - $on(eventName, eventHandler)
+      *Listen for an event only once - $once(eventName, eventHandler)
+      *Stop listening for an event - $off(eventName, eventHandler)
+      *These are for cases when you need to manually listen for events on a component instance. 
+
+      *PROS : useful as a code organization tool.(Date format)
+      *CONS
+      *requires saving the picker to the component instance. (Eventhough only lifecycle hooks are needed).
+      *setup code is kept separate from cleanup code. (makes difficult to programatically clean up)
+
+      *Solution 
+      *use programmatic listeners
+      ===
+        mounted: function () {
+          this.attachDatepicker('startDateInput')
+          this.attachDatepicker('endDateInput')
+        },
+        methods: {
+          attachDatepicker: function (refName) {
+            var picker = new Pikaday({
+              field: this.$refs[refName],
+              format: 'YYYY-MM-DD'
+            })
+
+            this.$once('hook:beforeDestroy', function () {
+              picker.destroy()
+            })
+          }
+        }
+        *a lot of setup and cleanup within a single component, 
+        *the best solution will usually be to create more modular components. 
+        *creating reusable component.
+      ===
+      $Vue's event & browser's event is not identical.
+      *$emit - dispatchEvent
+      *$on - addEventListener
+      *$off - removeEventListener
+
+
+    3. Circular reference
+
+      1. Recursive Component
+        * recursively invoking is possible with 'name' option.
+        ===
+          Vue.component('unique-name-of-my-component', {
+            // ...
+          })
+          *name: 'unique-name-of-my-component'
+
+          ---
+
+          name: 'stack-overflow',
+          template: '<div><stack-overflow></stack-overflow></div>'
+          *WARNING : Infinite loop.
+          *ERROR : max stack size exceeded 
+          *Recursive invocation must be conditional ('v-if' that will eventually be 'false' ).
+        ===
+      
+      2. Circular References Between Components
+        ===
+          *tree-folder
+          <p>
+            <span>{{ folder.name }}</span>
+            <tree-folder-contents :children="folder.children"/>
+          </p>
+
+          *tree-folder-contents
+          <ul>
+            <li v-for="child in children">
+              <tree-folder v-if="child.children" :folder="child"/>
+              <span v-else>{{ child.name }}</span>
+            </li>
+          </ul>
+          *File explorer structure.
+        ===
+
+        *if you’re requiring/importing components using a module system,
+        Failed to mount component: template or render function not defined.
+
+        *Solution : register 'beforeCreate' lifecycle hook for the paradox component(tree-folder-contents).
+        ===
+          beforeCreate: function () {
+            this.$options.components.TreeFolderContents = require('./tree-folder-contents.vue').default
+          }
+          --or--
+          components: {
+            TreeFolderContents: () => import('./tree-folder-contents.vue')
+          }
+          * Webpack’s asynchronous import(for registering component locally)
+        ===
+
+    4. Alternate Template Definitions
+
+      1. Inline templates
+      *inline-template (presented on a child component)
+      *the component will use its inner content as its template
+      *rather than treating it as distributed content.
+      *flexible template-authoring is possible.
+      ===
+        <my-component inline-template>
+          <div>
+            <p>These are compiled as the component's own template.</p>
+            <p>Not parent's transclusion content.</p>
+          </div>
+        </my-component>
+        *inline template needs to be defined inside the DOM element to which Vue is attached.
+
+        *Recommended
+        *prefer defining templates inside the component 
+        *using the 'template' option or in a '<template>' element in a '.vue' file.
+      ===
+
+      2. X-Templates
+      ===
+        <script type="text/x-template" id="hello-world-template">
+          <p>Hello hello hello</p>
+        </script>
+
+        ---
+
+        Vue.component('hello-world', {
+          template: '#hello-world-template'
+        })
+        *x-template needs to be defined outside the DOM element to which Vue is attached.  
+      ===
+      
+    5. Controlling Updates
+      
+      *Want to force an update, despite the fact that no reactive data has changed. 
+
+      1. Forcing Update 
+      ===
+        $forceUpdate
+        *If you find yourself needing to force an update in Vue, in 99.99% of cases, you’ve made a mistake somewhere.
+      ===
+
+      2. Cheap Static Components with 'v-once'
+      ===
+        Vue.component('terms-of-service', {
+          template: `
+            <div v-once>
+              <h1>Terms of Service</h1>
+              ... a lot of static content ...
+            </div>
+          `
+        })
+        *only evaluated once and then cached by adding the 'v-once' directive to the root element
+        *WARNING : try not to overuse this pattern.
+      ===
+      
+
+      
+
+
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+    
