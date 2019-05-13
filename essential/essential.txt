@@ -771,7 +771,7 @@ inplace-patch
 
 
 2. Array Change Detection
-*Vu wraps an observed array's mutation methods.
+*Vue wraps an observed array's mutation methods.
 *Mutation methods will trigger view updates.
 push()
 pop()
