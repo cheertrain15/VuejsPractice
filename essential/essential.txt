@@ -9,6 +9,12 @@ VIII. Event Handling
 IX. Form Input Bindings 
 X. Component Basics
 ============================
+
+*FOR MAC 
+export PATH=$PATH:/Users/denis/.npm-global/bin
+
+export PATH=$PATH:/Users/(name of the computer)/(name of the folder))/bin
+
 ----------------------------
 I. Vue.js Introduction 
 
